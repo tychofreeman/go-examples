@@ -13,7 +13,7 @@ func worker(id int, nums <-chan int, quit chan int) {
 
 const MAX = 100000
 
-func main() {
+func main2() {
 	quit := make(chan int, 20)
 	for i := 0; i < MAX; i++ {
 		nums := make(chan int, 30)
