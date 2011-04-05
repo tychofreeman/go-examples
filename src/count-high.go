@@ -11,14 +11,14 @@ func worker(id int, nums <-chan int, quit chan int) {
 	fmt.Printf("Workder %v done\n", id)
 }
 
-const MAX = 10000
+const MAX = 100000
 
 func main() {
 	quit := make(chan int, 20)
 	for i := 0; i < MAX; i++ {
 		nums := make(chan int, 30)
 		go worker(i, nums, quit)
-		for j := 0; j < 15; j++ {
+		for j := 0; j < 1; j++ {
 			nums <- j
 		}
 		close(nums)
@@ -29,5 +29,4 @@ func main() {
 		id := <- quit
 		fmt.Printf("Worker %v quit\n", id)
 	}
-
 }
