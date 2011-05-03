@@ -3,17 +3,20 @@ package main
 import (
 	"fmt"
 	"flag"
-	. "math"
 )
 
-func makeWorker(begin, end uint64, write chan float64) {
+func makeWorker(beginIsEven bool, begin, end float64, write chan float64) {
 	go func() {
-		defer close(write)
-
 		var sum float64 = 0.0
-		for i := begin; i <= end; i++ {
-			addend := 4.0 * Pow(-1.0, float64(i)) / float64(2 * i + 1)
-			sum += addend
+		shouldAdd := beginIsEven
+		for i := begin; i <= end; i = i + 1.0 {
+			addend := 4.0 / (2*i + float64(1.0))
+			if shouldAdd {
+				sum += addend
+			} else {
+				sum -= addend
+			}
+			shouldAdd = !shouldAdd
 		}
 		write <- sum
 	}()
@@ -23,27 +26,22 @@ func main() {
 	workers := flag.Uint64("workers", 0, "max integer to try")
 	rng := flag.Uint64("range", 0, "max integer to try")
 	flag.Parse()
-	fmt.Printf("Workers: %v\nRange: %v\nTotal Iterations: %v\n", *workers, *rng, *workers * *rng)
 
-	chans := make(chan chan float64, 100000)
+	chans := make(chan float64, 1000000)
 	quit := make(chan bool)
 
 	go func() {
 		var pi float64 = 0.0
-		for c := range chans {
-			pi += <- c
-			fmt.Printf("Approximate pi = %v\n", pi)
+		for i := uint64(0); i < *workers; i++ {
+			pi += <- chans
 		}
-		fmt.Printf("Pi = %v\n", pi)
+		fmt.Printf("Approximate Pi = %v\n", pi)
 		quit <- true
 	}()
 
 	var i uint64 = 0
 	for ; i < *workers; i++ {
-		write := make(chan float64)
-		makeWorker(i * *rng, (i + 1) * *rng - 1, write)
-		chans <- write
+		makeWorker((0 == ((i * *rng) % 2)), float64(i * *rng), float64((i + 1) * *rng - 1), chans)
 	}
-	close(chans)
 	<- quit
 }

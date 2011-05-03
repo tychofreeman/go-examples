@@ -10,8 +10,8 @@ func addFilter(num int, read chan int) (write chan int) {
 		return
 	}
 
-	write = make(chan int)
-	
+	write = make(chan int, 100)
+
 	fmt.Printf("%v\n", num)
 
 	go func() {
@@ -33,7 +33,7 @@ func main() {
 	flag.Parse()
 	fmt.Printf("Got arg %v\n", *max)
 
-	in := make(chan int)
+	in := make(chan int, 100)
 
 	go func() {
 		for i := 2; i < *max; i++ {
